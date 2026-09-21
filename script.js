@@ -1,3 +1,8 @@
+(() => {
+  if (typeof document === 'undefined') {
+    return;
+  }
+
 const menuToggle = document.querySelector('.menu-toggle');
 const siteNav = document.querySelector('.site-nav');
 const searchToggle = document.querySelector('.search-toggle');
@@ -39,9 +44,10 @@ searchToggle?.addEventListener('click', () => {
   if (open) searchInput?.focus();
 });
 
-searchInput?.addEventListener('input', (event) => {
+  searchInput?.addEventListener('input', (event) => {
   const query = event.target.value.trim().toLowerCase();
   projects.forEach((project) => {
     project.hidden = Boolean(query) && !project.textContent.toLowerCase().includes(query);
   });
-});
+  });
+})();
