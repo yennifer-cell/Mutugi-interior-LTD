@@ -9,6 +9,9 @@ const searchToggle = document.querySelector('.search-toggle');
 const searchPanel = document.querySelector('.search-panel');
 const searchInput = document.querySelector('#search-input');
 const projects = document.querySelectorAll('.project');
+const enquiryForm = document.querySelector('#enquiry-form');
+const formStatus = document.querySelector('#form-status');
+const apiBaseUrl = window.location.protocol === 'file:' || (['localhost', '127.0.0.1'].includes(window.location.hostname) && window.location.port !== '3000') ? 'http://localhost:3000' : '';
 
 menuToggle?.addEventListener('click', () => {
   const open = siteNav.classList.toggle('is-open');
@@ -49,5 +52,34 @@ searchToggle?.addEventListener('click', () => {
   projects.forEach((project) => {
     project.hidden = Boolean(query) && !project.textContent.toLowerCase().includes(query);
   });
+  });
+
+  enquiryForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submitButton = enquiryForm.querySelector('button[type="submit"]');
+    const formData = Object.fromEntries(new FormData(enquiryForm));
+    submitButton.disabled = true;
+    formStatus.textContent = 'Sending your enquiry...';
+    formStatus.className = 'form-status';
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/enquiries`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      const contentType = response.headers.get('content-type') || '';
+      const result = contentType.includes('application/json') ? await response.json() : {};
+      if (!contentType.includes('application/json')) throw new Error('The enquiry service is unavailable. Please open the site with npm start and try again.');
+      if (!response.ok) throw new Error(result.error || 'Unable to send enquiry.');
+      enquiryForm.reset();
+      formStatus.textContent = 'Thank you. We will be in touch shortly.';
+      formStatus.classList.add('is-success');
+    } catch (error) {
+      formStatus.textContent = error.message;
+      formStatus.classList.add('is-error');
+    } finally {
+      submitButton.disabled = false;
+    }
   });
 })();
